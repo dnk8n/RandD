@@ -3,9 +3,16 @@ import random
 
 time_now = datetime.utcnow()
 time_format = '%Y-%m-%d_%H:%M:%S'
-snapshot_dict = {
-    'current_snapshots': []
-}
+current_snapshots = []
+snapshot_spread = []
+number_of_snapshots = 20
+
+
+def which_to_pop(spread):
+    sum_spread = sum(spread)
+    population = range(1, number_of_snapshots + 1)
+    weights = [1 / (i / sum_spread) for i in spread]
+    return random.choices(population, weights)[0]
 
 
 for hour in range(24 * 365):
@@ -13,27 +20,23 @@ for hour in range(24 * 365):
 
     # Each hour, add a snapshot
     snapshot_add = snapshot_time.strftime(time_format)
-    snapshot_dict['current_snapshots'].insert(0, snapshot_add)
+    current_snapshots.insert(0, snapshot_add)
 
     # Each hour, remove a snapshot
-    if len(snapshot_dict['current_snapshots']) > 20:
+    if len(current_snapshots) > number_of_snapshots:
         # Do something more intelligent here to decide which snapshot to remove
-        snapshot_remove = snapshot_dict['current_snapshots'].pop(
-            random.randint(1, 20)
-        )
+        snapshot_remove = current_snapshots.pop(which_to_pop(snapshot_spread))
 
     # Print current list of snapshots
-    print(f'Current Snapshots: {snapshot_dict["current_snapshots"]}')
+    print(f'Current Snapshots: {current_snapshots}')
 
     # Print list of snapshots in terms of spread
     snapshot_spread = [
         (
-            datetime.strptime(
-                snapshot_dict['current_snapshots'][0], time_format
-            ) - datetime.strptime(i, time_format)
+            datetime.strptime(current_snapshots[0], time_format)
+            - datetime.strptime(i, time_format)
         )
         // timedelta(hours=1) + 1
-        for i in snapshot_dict['current_snapshots']
+        for i in current_snapshots
     ]
-    print(snapshot_spread)
-
+    print(f'Snapshot spread: {snapshot_spread}')
